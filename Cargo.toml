@@ -1,0 +1,8 @@
+[package]
+name = "siyi_cam"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+heapless = "0.8.0"
+micromath = "2.1.0"
