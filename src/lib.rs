@@ -38,8 +38,8 @@ pub mod siyi_cam {
                     let mut byte_arr: PacketBuffer = PacketBuffer::new();
                     byte_arr.extend([0x55, 0x66, 0x01, 0x04, 0x00, seq, 0x00, 0x0e]);
     
-                    byte_arr.extend(yaw.clamp(-1350, 1350).to_be_bytes());
-                    byte_arr.extend(pitch.clamp(-900, 250).to_be_bytes());
+                    byte_arr.extend(yaw.clamp(-1350, 1350).to_le_bytes());
+                    byte_arr.extend(pitch.clamp(-900, 250).to_le_bytes());
                     byte_arr.extend(crc16_cal(&byte_arr).to_le_bytes());
     
                     byte_arr
@@ -105,7 +105,7 @@ mod test {
         assert_eq!(
             SiyiCommand::ControlAngle(0, -90).to_bytes(),
             [
-                0x55, 0x66, 0x01, 0x04, 0x00, 0x00, 0x00, 0x0e, 0x00, 0x00, 0xff, 0xa6, 0x3b, 0x11
+                0x55, 0x66, 0x01, 0x04, 0x00, 0x00, 0x00, 0x0e, 0x00, 0x00, 0xa6, 0xff, 0xc0, 0x6e
             ]
         );
     }
