@@ -20,9 +20,17 @@ pub mod siyi_cam {
     }
     
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub enum ZoomMode {
+        ZoomIn,
+        StopZoom,
+        ZoomOut,
+    }
+    
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub enum SiyiCommand {
         ControlAngle(i16, i16),
         AbsZoom(ZoomFactor),
+        AutoZoom(ZoomMode),
     }
 
     type PacketBuffer = Vec<u8, 255>;
@@ -50,6 +58,21 @@ pub mod siyi_cam {
     
                     byte_arr.extend(zoom.int.to_be_bytes());
                     byte_arr.extend(zoom.fract.to_be_bytes());
+                    byte_arr.extend(crc16_cal(&byte_arr).to_le_bytes());
+    
+                    byte_arr
+                }
+                SiyiCommand::AutoZoom(zoom) => {
+                    let mut byte_arr: PacketBuffer = PacketBuffer::new();
+                    byte_arr.extend([0x55, 0x66, 0x01, 0x01, 0x00, seq, 0x00, 0x05]);
+    
+                    let zoom: i8 = match zoom {
+                        ZoomMode::ZoomIn => 1,
+                        ZoomMode::StopZoom => 0,
+                        ZoomMode::ZoomOut => -1,
+                    };
+
+                    byte_arr.extend(zoom.to_be_bytes());
                     byte_arr.extend(crc16_cal(&byte_arr).to_le_bytes());
     
                     byte_arr
