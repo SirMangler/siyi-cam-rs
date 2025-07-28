@@ -27,10 +27,18 @@ pub mod siyi_cam {
     }
     
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub enum GimbalMode {
+        LockMode,
+        FollowMode,
+        FPVMode,
+    }
+    
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub enum SiyiCommand {
         ControlAngle(i16, i16),
         AbsZoom(ZoomFactor),
         AutoZoom(ZoomMode),
+        WorkingMode(GimbalMode),
     }
 
     type PacketBuffer = Vec<u8, 255>;
@@ -73,6 +81,21 @@ pub mod siyi_cam {
                     };
 
                     byte_arr.extend(zoom.to_be_bytes());
+                    byte_arr.extend(crc16_cal(&byte_arr).to_le_bytes());
+    
+                    byte_arr
+                }
+                SiyiCommand::WorkingMode(mode) => {
+                    let mut byte_arr: PacketBuffer = PacketBuffer::new();
+                    byte_arr.extend([0x55, 0x66, 0x01, 0x01, 0x00, seq, 0x00, 0x19]);
+    
+                    let mode: u8 = match mode {
+                        GimbalMode::LockMode => 0,
+                        GimbalMode::FollowMode => 1,
+                        GimbalMode::FPVMode => 2,
+                    };
+
+                    byte_arr.extend(mode.to_be_bytes());
                     byte_arr.extend(crc16_cal(&byte_arr).to_le_bytes());
     
                     byte_arr
