@@ -27,6 +27,12 @@ pub mod siyi_cam {
     }
     
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub enum CenterPos {
+        Default,
+        Pos0,
+    }
+
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub enum GimbalMode {
         LockMode,
         FollowMode,
@@ -39,6 +45,7 @@ pub mod siyi_cam {
         AbsZoom(ZoomFactor),
         AutoZoom(ZoomMode),
         WorkingMode(GimbalMode),
+        Center(CenterPos),
     }
 
     type PacketBuffer = Vec<u8, 255>;
@@ -96,6 +103,20 @@ pub mod siyi_cam {
                     };
 
                     byte_arr.extend(mode.to_be_bytes());
+                    byte_arr.extend(crc16_cal(&byte_arr).to_le_bytes());
+    
+                    byte_arr
+                }
+                SiyiCommand::Center(center_pos) => {
+                    let mut byte_arr: PacketBuffer = PacketBuffer::new();
+                    byte_arr.extend([0x55, 0x66, 0x01, 0x01, 0x00, seq, 0x00, 0x08]);
+    
+                    let center_pos: u8 = match center_pos {
+                        CenterPos::Default => 0,
+                        CenterPos::Pos0 => 1,
+                    };
+
+                    byte_arr.extend(center_pos.to_be_bytes());
                     byte_arr.extend(crc16_cal(&byte_arr).to_le_bytes());
     
                     byte_arr
