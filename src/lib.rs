@@ -48,6 +48,33 @@ pub mod siyi_cam {
         Center(CenterPos),
     }
 
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub enum AckResult {
+        Success,
+        Error,
+    }
+
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub enum SiyiAck {
+        Center(AckResult)
+    }
+
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub enum SiyiAckId {
+        Center = 0x08,
+    }
+
+    impl TryFrom<u8> for SiyiAckId {
+        type Error = ();
+
+        fn try_from(value: u8) -> Result<Self, Self::Error> {
+            match value {
+                0x08 => Ok(SiyiAckId::Center),
+                _ => Err(()),
+            }
+        }
+    }
+
     type PacketBuffer = Vec<u8, 255>;
     
     impl SiyiCommand {
@@ -121,6 +148,29 @@ pub mod siyi_cam {
     
                     byte_arr
                 }
+            }
+        }
+    }
+
+    impl SiyiAck {
+        pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
+            if bytes[0] != 0x55 || bytes[1] != 0x66 || bytes[2] != 0x01 {
+                return None;
+            }
+
+            let crc = u16::from_le_bytes([bytes[bytes.len() - 2], bytes[bytes.len() - 1]]);
+            if crc16_cal(&bytes[..bytes.len() - 2]) != crc {
+                return None;
+            }
+
+            match SiyiAckId::try_from(bytes[7]).ok()? {
+                SiyiAckId::Center => {
+                    Some(SiyiAck::Center(if bytes[8] != 0 {
+                        AckResult::Success
+                    } else {
+                        AckResult::Error
+                    }))
+                },
             }
         }
     }
