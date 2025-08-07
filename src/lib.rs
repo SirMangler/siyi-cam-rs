@@ -1,5 +1,5 @@
 #![no_std]
-pub mod siyi_cam {
+pub mod transport {
     use heapless::Vec;
     #[allow(unused_imports)]
     use micromath::F32Ext as _;
@@ -215,7 +215,7 @@ pub mod siyi_cam {
 
 #[cfg(test)]
 mod test {
-    use crate::siyi_cam::{SiyiCommand, ZoomFactor};
+    use crate::transport::{SiyiCommand, ZoomFactor};
 
     #[test]
     fn test_control_angle() {
