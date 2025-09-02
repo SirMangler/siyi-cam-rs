@@ -154,7 +154,7 @@ pub mod transport {
 
     impl SiyiAck {
         pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
-            if bytes[0] != 0x55 || bytes[1] != 0x66 || bytes[2] != 0x01 {
+            if bytes[0] != 0x55 || bytes[1] != 0x66 {
                 return None;
             }
 
