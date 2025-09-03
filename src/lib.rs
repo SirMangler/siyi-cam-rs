@@ -218,17 +218,17 @@ pub mod transport {
                     AckResult::Error
                 })),
                 SiyiAckId::ControlAngle => Some(SiyiAck::ControlAngle(ControlAngles {
-                    pitch: i16::from_be_bytes([bytes[8], bytes[9]]) as f32  / 10.0,
-                    yaw: i16::from_be_bytes([bytes[10], bytes[11]]) as f32  / 10.0,
-                    roll: i16::from_be_bytes([bytes[12], bytes[13]]) as f32 / 10.0,
+                    pitch: i16::from_le_bytes([bytes[8], bytes[9]]) as f32  / 10.0,
+                    yaw: i16::from_le_bytes([bytes[10], bytes[11]]) as f32  / 10.0,
+                    roll: i16::from_le_bytes([bytes[12], bytes[13]]) as f32 / 10.0,
                 })),
                 SiyiAckId::GimbalAttitude => Some(SiyiAck::GimbalAttitude(GimbalAttitude {
-                    yaw: i16::from_be_bytes([bytes[8], bytes[9]]) as f32 / 10.0,
-                    pitch: i16::from_be_bytes([bytes[10], bytes[11]]) as f32 / 10.0,
-                    roll: i16::from_be_bytes([bytes[12], bytes[13]]) as f32 / 10.0,
-                    yaw_velocity: i16::from_be_bytes([bytes[14], bytes[15]]) as f32 / 10.0,
-                    pitch_velocity: i16::from_be_bytes([bytes[16], bytes[17]]) as f32 / 10.0,
-                    roll_velocity: i16::from_be_bytes([bytes[18], bytes[19]]) as f32 / 10.0,
+                    yaw: i16::from_le_bytes([bytes[8], bytes[9]]) as f32 / 10.0,
+                    pitch: i16::from_le_bytes([bytes[10], bytes[11]]) as f32 / 10.0,
+                    roll: i16::from_le_bytes([bytes[12], bytes[13]]) as f32 / 10.0,
+                    yaw_velocity: i16::from_le_bytes([bytes[14], bytes[15]]) as f32 / 10.0,
+                    pitch_velocity: i16::from_le_bytes([bytes[16], bytes[17]]) as f32 / 10.0,
+                    roll_velocity: i16::from_le_bytes([bytes[18], bytes[19]]) as f32 / 10.0,
                 })),
             }
         }
