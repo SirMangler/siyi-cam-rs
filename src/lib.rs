@@ -68,6 +68,7 @@ pub mod transport {
         AutoZoom(ZoomMode),
         WorkingMode(GimbalMode),
         Center(CenterPos),
+        GimbalAttitude,
     }
 
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -76,17 +77,28 @@ pub mod transport {
         Error,
     }
 
-    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    #[derive(Debug, Clone, Copy, PartialEq)]
     pub struct ControlAngles {
-        pub yaw: i16,
-        pub pitch: i16,
-        pub roll: i16,
+        pub yaw: f32,
+        pub pitch: f32,
+        pub roll: f32,
     }
 
-    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    #[derive(Debug, Clone, Copy, PartialEq)]
+    pub struct GimbalAttitude {
+        pub yaw: f32,
+        pub pitch: f32,
+        pub roll: f32,
+        pub yaw_velocity: f32,
+        pub pitch_velocity: f32,
+        pub roll_velocity: f32,
+    }
+
+    #[derive(Debug, Clone, Copy, PartialEq)]
     pub enum SiyiAck {
         Center(AckResult),
         ControlAngle(ControlAngles),
+        GimbalAttitude(GimbalAttitude),
     }
 
     try_from_u8! {
@@ -94,6 +106,7 @@ pub mod transport {
         pub enum SiyiAckId {
             Center = 0x08,
             ControlAngle = 0x0E,
+            GimbalAttitude = 0x0D,
         }
     }
 
@@ -170,6 +183,13 @@ pub mod transport {
 
                     byte_arr
                 }
+                SiyiCommand::GimbalAttitude => {
+                    let mut byte_arr: PacketBuffer = PacketBuffer::new();
+                    byte_arr.extend([0x55, 0x66, 0x01, 0x00, 0x00, seq, 0x00, 0x0d]);
+                    byte_arr.extend(crc16_cal(&byte_arr).to_le_bytes());
+
+                    byte_arr
+                }
             }
         }
     }
@@ -198,9 +218,17 @@ pub mod transport {
                     AckResult::Error
                 })),
                 SiyiAckId::ControlAngle => Some(SiyiAck::ControlAngle(ControlAngles {
-                    pitch: i16::from_be_bytes([bytes[8], bytes[9]]),
-                    yaw: i16::from_be_bytes([bytes[10], bytes[11]]),
-                    roll: i16::from_be_bytes([bytes[12], bytes[13]]),
+                    pitch: i16::from_be_bytes([bytes[8], bytes[9]]) as f32  / 10.0,
+                    yaw: i16::from_be_bytes([bytes[10], bytes[11]]) as f32  / 10.0,
+                    roll: i16::from_be_bytes([bytes[12], bytes[13]]) as f32 / 10.0,
+                })),
+                SiyiAckId::GimbalAttitude => Some(SiyiAck::GimbalAttitude(GimbalAttitude {
+                    yaw: i16::from_be_bytes([bytes[8], bytes[9]]) as f32 / 10.0,
+                    pitch: i16::from_be_bytes([bytes[10], bytes[11]]) as f32 / 10.0,
+                    roll: i16::from_be_bytes([bytes[12], bytes[13]]) as f32 / 10.0,
+                    yaw_velocity: i16::from_be_bytes([bytes[14], bytes[15]]) as f32 / 10.0,
+                    pitch_velocity: i16::from_be_bytes([bytes[16], bytes[17]]) as f32 / 10.0,
+                    roll_velocity: i16::from_be_bytes([bytes[18], bytes[19]]) as f32 / 10.0,
                 })),
             }
         }
