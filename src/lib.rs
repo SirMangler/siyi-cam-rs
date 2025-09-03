@@ -4,6 +4,28 @@ pub mod transport {
     #[allow(unused_imports)]
     use micromath::F32Ext as _;
 
+    macro_rules! try_from_u8 {
+        ($(#[$meta:meta])* $vis:vis enum $name:ident {
+            $($(#[$vmeta:meta])* $vname:ident $(= $val:expr)?,)*
+        }) => {
+            $(#[$meta])*
+            $vis enum $name {
+                $($(#[$vmeta])* $vname $(= $val)?,)*
+            }
+
+            impl TryFrom<u8> for $name {
+                type Error = ();
+
+                fn try_from(v: u8) -> Result<Self, Self::Error> {
+                    match v {
+                        $(x if x == $name::$vname as u8 => Ok($name::$vname),)*
+                        _ => Err(()),
+                    }
+                }
+            }
+        }
+    }
+
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct ZoomFactor {
         pub(crate) int: u8,
@@ -67,21 +89,11 @@ pub mod transport {
         ControlAngle(ControlAngles),
     }
 
-    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-    pub enum SiyiAckId {
-        Center = 0x08,
-        ControlAngle = 0x0E,
-    }
-
-    impl TryFrom<u8> for SiyiAckId {
-        type Error = ();
-
-        fn try_from(value: u8) -> Result<Self, Self::Error> {
-            match value {
-                0x08 => Ok(SiyiAckId::Center),
-                0x0E => Ok(SiyiAckId::ControlAngle),
-                _ => Err(()),
-            }
+    try_from_u8! {
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, )]
+        pub enum SiyiAckId {
+            Center = 0x08,
+            ControlAngle = 0x0E,
         }
     }
 
